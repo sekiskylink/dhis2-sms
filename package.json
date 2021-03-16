@@ -1,0 +1,25 @@
+{
+  "name": "dhis2-sms",
+  "version": "1.0.0",
+  "description": "",
+  "license": "BSD-3-Clause",
+  "private": true,
+  "scripts": {
+    "build": "d2-app-scripts build",
+    "start": "d2-app-scripts start",
+    "test": "d2-app-scripts test"
+  },
+  "devDependencies": {
+    "@dhis2/cli-app-scripts": "^5.0.0"
+  },
+  "dependencies": {
+    "@dhis2/app-runtime": "^2.2.2",
+    "@dhis2/app-runtime-adapter-d2": "^1.0.1",
+    "antd": "^4.6.3",
+    "d2": "^31.8.2",
+    "lodash": "^4.17.20",
+    "mobx": "^5.15.6",
+    "mobx-react": "^6.3.0",
+    "moment": "^2.29.1"
+  }
+}
