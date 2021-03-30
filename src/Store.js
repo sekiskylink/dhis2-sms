@@ -16,6 +16,7 @@ class Store {
   followupActions = [];
   rumorSources = [];
   eventTypes = [];
+  currentEventValues = [];
   eventConfs = {
     program: "iaN1DovM5em",
     eventType: "ILmx9NZX5GK",
@@ -25,7 +26,8 @@ class Store {
     phone: "fb9Fs09UNN8",
     rumorSource: "nvYHp4qr35Q",
     actionTaken: "Y9ahw4POban",
-    followupAction: "sapRdA8sojg"
+    followupAction: "sapRdA8sojg",
+    comment: "MYIDtPnvepJ"
   }
 
   setInboundSms = (val) => (this.inboundsmss = val);
@@ -36,6 +38,7 @@ class Store {
   // setFollowupActions = (val) => (this.followupActions = val);
   setRumorSources = (val) => (this.rumorSources = val);
   setEventTypes = (val) => (this.eventTypes = val);
+  setCurrentEventValues = (val) => (this.currentEventValues = val);
 
   handleChange = (value) => {
     this.setSelectedGroups(value);
@@ -67,7 +70,8 @@ class Store {
     const api = this.d2.Api.getApi();
     const url = `sms/inbound`;
     const { inboundsmss } = await api.get(url, {
-      fields: "id,text,originator,receiveddate,smsstatus,sentdate"
+      fields: "id,text,originator,receiveddate,smsstatus,sentdate",
+      order: "receiveddate:desc"
     });
     this.setInboundSms(inboundsmss.map((a)=>{
       a.receiveddate = this.formateDate(a.receiveddate);
@@ -143,6 +147,33 @@ class Store {
     await api.post("events", eventPayload);
   }
 
+  fetchEvent = async (eventID) => {
+    const api = this.d2.Api.getApi();
+    const url = "events/" + eventID + ".json";
+    try {
+    const {orgUnit,dataValues} = await api.get(url, {fields: "orgUnit,dataValues[dataElement,value]"});
+    if (dataValues instanceof Object){
+      var cValues = {};
+      const eValues = dataValues.map(i => {
+        // var x = {};
+        // x[i['dataElement']] = i['value'];
+        var y = {};
+        const k = Object.keys(this.eventConfs).find(
+          key => this.eventConfs[key] === i['dataElement'])
+        y[k] = i['value'];
+        cValues[k] = i['value'];
+        return y;
+      })
+      cValues['district'] = orgUnit;
+      console.log("Event Values", cValues);
+      this.setCurrentEventValues(cValues);
+    }
+  } catch {
+    console.log("Couldn't fetch event with id:", eventID);
+  }
+    // this.setCurrentEventValues(dataValues);
+  }
+
   get columns() {
     return [
       // {name: "id", column: "ID"},
@@ -167,12 +198,13 @@ class Store {
               return (
                 <>
                   <EventModal msgObj={row}/>
-                  &nbsp;
+                  {/*
                   <Dialog
                     message={row["text"]}
                     originator={row["originator"]}
                     sentdate={row["sentdate"]}
                   />
+                  */}
                 </>
               );
             } else {
@@ -216,10 +248,12 @@ decorate(Store, {
   actionsTaken: observable,
   selectedGroups: observable,
   eventConfs: observable,
+  currentEventValues: observable,
   setD2: action,
   fetchView: action,
   fetchUserGroups: action,
   fetchDistricts: action,
+  fetchEvent: action,
   setInboundSms: action,
   setUserGroups: action,
   setSelectedGroups: action,
@@ -228,6 +262,7 @@ decorate(Store, {
   // setFollowupActions: action,
   setRumorSources: action,
   setEventTypes: action,
+  setCurrentEventValues: action,
   handleChange: action,
   columns: computed,
   numbers: computed,
